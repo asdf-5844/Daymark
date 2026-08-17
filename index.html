@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f3efe7" />
+  <title>Daymark — make every day count</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="grain"></div>
+  <header class="topbar">
+    <a href="#" class="brand" aria-label="Daymark home">
+      <span class="brand-mark"><i></i><i></i><i></i></span>
+      <span>daymark</span>
+    </a>
+    <div class="header-actions">
+      <button class="icon-button" id="themeButton" aria-label="Toggle theme">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42"/><circle cx="12" cy="12" r="4"/></svg>
+      </button>
+      <button class="primary-button" id="newTaskButton"><span>＋</span> New task</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <aside class="sidebar">
+      <div class="eyebrow">YOUR JOURNEY</div>
+      <nav id="taskList" class="task-list" aria-label="Your tasks"></nav>
+      <button class="add-task-link" id="addTaskLink">＋&nbsp;&nbsp;Add a task</button>
+      <div class="sidebar-quote">
+        <span class="quote-mark">“</span>
+        <p>Small disciplines repeated with consistency lead to great achievements.</p>
+        <span>— John C. Maxwell</span>
+      </div>
+    </aside>
+
+    <section class="content" id="mainContent">
+      <div class="task-heading">
+        <div class="title-row">
+          <span class="task-icon" id="taskIcon">✦</span>
+          <div>
+            <div class="eyebrow">CURRENT TASK</div>
+            <h1 id="taskTitle">Morning pages</h1>
+          </div>
+        </div>
+        <button class="more-button" id="moreButton" aria-label="Task menu">•••</button>
+        <div class="task-menu" id="taskMenu">
+          <button id="editTaskButton">Edit task</button>
+          <button id="resetTaskButton">Clear check-ins</button>
+          <button id="deleteTaskButton" class="danger">Delete task</button>
+        </div>
+      </div>
+
+      <div class="goal-line">
+        <div class="goal-copy"><span id="goalText">Goal: 365 days</span><b id="percentText">0%</b></div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+
+      <section class="stats-grid">
+        <article class="stat-card streak-card">
+          <div class="stat-icon flame">♨</div>
+          <div><span>CURRENT STREAK</span><strong><span id="currentStreak">0</span> <small>days</small></strong></div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-icon">↗</div>
+          <div><span>BEST STREAK</span><strong><span id="bestStreak">0</span> <small>days</small></strong></div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-icon">✓</div>
+          <div><span>TOTAL DAYS</span><strong><span id="totalDays">0</span> <small id="totalGoal">/ 365</small></strong></div>
+        </article>
+      </section>
+
+      <section class="calendar-card">
+        <div class="calendar-head">
+          <div>
+            <div class="eyebrow">ACTIVITY CALENDAR</div>
+            <h2 id="monthTitle">August 2026</h2>
+          </div>
+          <div class="calendar-controls">
+            <button id="prevMonth" aria-label="Previous month">←</button>
+            <button id="todayButton">Today</button>
+            <button id="nextMonth" aria-label="Next month">→</button>
+          </div>
+        </div>
+        <div class="weekdays"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="calendar-footer">
+          <div class="legend"><span><i class="dot done"></i>Completed</span><span><i class="dot today"></i>Today</span></div>
+          <p>Click a day to mark it complete</p>
+        </div>
+      </section>
+
+      <section class="encouragement">
+        <div class="spark">✦</div>
+        <div><strong id="encouragementTitle">Your journey starts today.</strong><p id="encouragementText">Show up for yourself—one day at a time.</p></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="taskModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <form class="modal" id="taskForm">
+      <button type="button" class="modal-close" id="closeModal" aria-label="Close">×</button>
+      <div class="eyebrow">BUILD A BETTER RHYTHM</div>
+      <h2 id="modalTitle">Create a new task</h2>
+      <p class="modal-intro">Choose something meaningful, then keep showing up.</p>
+      <label>Task name<input id="taskNameInput" maxlength="40" placeholder="e.g. Read for 20 minutes" required /></label>
+      <label>Choose an icon</label>
+      <div class="icon-picker" id="iconPicker">
+        <button type="button" data-icon="✦" class="selected">✦</button><button type="button" data-icon="◒">◒</button><button type="button" data-icon="♨">♨</button><button type="button" data-icon="⌁">⌁</button><button type="button" data-icon="♡">♡</button><button type="button" data-icon="☀">☀</button>
+      </div>
+      <div class="form-row">
+        <label>Goal length<input id="goalInput" type="number" min="1" max="10000" value="365" required /></label>
+        <label>Unit<select id="goalUnit"><option value="days">days</option><option value="weeks">weeks</option><option value="months">months</option><option value="years">years</option></select></label>
+      </div>
+      <button type="submit" class="primary-button modal-submit" id="submitTask">Start tracking</button>
+    </form>
+  </div>
+
+  <div class="toast" id="toast"><span>✓</span><p></p></div>
+  <script src="app.js"></script>
+</body>
+</html>
