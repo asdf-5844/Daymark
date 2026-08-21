@@ -30,12 +30,19 @@ let displayedMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 let selectedIcon = "📖";
 let editingTaskId = null;
 let pendingPastDate = null;
+let notes = JSON.parse(localStorage.getItem("daymark-notes") || "null") || [];
+let taskNoteTimer = null;
+let editingNoteId = null;
 
 // Storage and date helpers
 
 function saveTasks() {
   localStorage.setItem("daymark-tasks", JSON.stringify(tasks));
   localStorage.setItem("daymark-active", activeTaskId);
+}
+
+function saveNotes() {
+  localStorage.setItem("daymark-notes", JSON.stringify(notes));
 }
 
 function getActiveTask() {
@@ -95,6 +102,19 @@ function calculateStreaks(task) {
 
 // Rendering
 
+function showTracker() {
+  $("#mainContent").hidden = false;
+  $("#notesPage").hidden = true;
+  $("#notesNavButton").classList.remove("active");
+}
+
+function showNotes() {
+  $("#mainContent").hidden = true;
+  $("#notesPage").hidden = false;
+  $("#notesNavButton").classList.add("active");
+  renderNotes();
+}
+
 function renderTaskList() {
   $("#taskList").innerHTML = tasks
     .map(
@@ -109,6 +129,7 @@ function renderTaskList() {
   document.querySelectorAll(".task-item").forEach((button) => {
     button.addEventListener("click", () => {
       activeTaskId = button.dataset.id;
+      showTracker();
       saveTasks();
       renderApp();
     });
@@ -167,6 +188,76 @@ function renderCalendar() {
   });
 }
 
+function renderNotes() {
+  const orderedNotes = [...notes].sort((first, second) => {
+    if (!first.date) return 1;
+    if (!second.date) return -1;
+    return new Date(first.date) - new Date(second.date);
+  });
+
+  $("#notesList").innerHTML = orderedNotes
+    .map((note) => {
+      const date = note.date ? new Date(note.date) : null;
+      const dateLabel = date
+        ? date.toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+        : "";
+      const timeLabel = date
+        ? date.toLocaleTimeString(undefined, {
+            hour: "numeric",
+            minute: "2-digit",
+          })
+        : "";
+
+      return `
+        <article class="note-item">
+          <div class="note-date ${date ? "" : "no-date"}">
+            ${date ? `<strong>${dateLabel}</strong><span>${timeLabel}</span>` : "NOTE"}
+          </div>
+          <div class="note-content">
+            <strong>${escapeHtml(note.title)}</strong>
+            ${note.body ? `<p>${escapeHtml(note.body)}</p>` : ""}
+          </div>
+          <div class="note-actions">
+            <button class="edit-note" data-note-id="${note.id}" aria-label="Edit ${escapeHtml(note.title)}">Edit</button>
+            <button class="delete-note" data-note-id="${note.id}" aria-label="Delete ${escapeHtml(note.title)}">×</button>
+          </div>
+        </article>`;
+    })
+    .join("");
+
+  $("#emptyNotes").hidden = notes.length > 0;
+
+  document.querySelectorAll(".edit-note").forEach((button) => {
+    button.addEventListener("click", () => {
+      const note = notes.find((item) => item.id === button.dataset.noteId);
+      if (!note) return;
+
+      editingNoteId = note.id;
+      $("#noteTitleInput").value = note.title;
+      $("#noteDateInput").value = note.date || "";
+      $("#noteBodyInput").value = note.body || "";
+      $("#saveNoteButton").textContent = "Save changes";
+      $("#cancelNoteEdit").hidden = false;
+      $("#noteTitleInput").focus();
+      $("#noteForm").scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  });
+
+  document.querySelectorAll(".delete-note").forEach((button) => {
+    button.addEventListener("click", () => {
+      notes = notes.filter((note) => note.id !== button.dataset.noteId);
+      if (editingNoteId === button.dataset.noteId) resetNoteForm();
+      saveNotes();
+      renderNotes();
+      showToast("Note deleted");
+    });
+  });
+}
+
 function renderApp() {
   if (!tasks.length) {
     tasks = [{ ...starterTask, id: crypto.randomUUID() }];
@@ -179,6 +270,8 @@ function renderApp() {
   const percentage = Math.min(100, Math.round((totalDays / task.goal) * 100));
   const streaks = calculateStreaks(task);
 
+  $("#taskNoteInput").value = task.note || "";
+  $("#taskNoteStatus").textContent = "Saved";
   $("#taskIcon").textContent = task.icon;
   $("#taskTitle").textContent = task.name;
   $("#goalText").textContent = `Goal: ${task.goal.toLocaleString()} days`;
@@ -291,6 +384,58 @@ function showToast(message) {
 
 // Event listeners
 
+$("#taskNoteInput").addEventListener("input", (event) => {
+  getActiveTask().note = event.target.value;
+  $("#taskNoteStatus").textContent = "Saving...";
+  clearTimeout(taskNoteTimer);
+  taskNoteTimer = setTimeout(() => {
+    saveTasks();
+    $("#taskNoteStatus").textContent = "Saved";
+  }, 350);
+});
+
+function resetNoteForm() {
+  editingNoteId = null;
+  $("#noteForm").reset();
+  $("#saveNoteButton").textContent = "Add note";
+  $("#cancelNoteEdit").hidden = true;
+}
+
+$("#cancelNoteEdit").addEventListener("click", resetNoteForm);
+
+$("#noteForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const title = $("#noteTitleInput").value.trim();
+  const body = $("#noteBodyInput").value.trim();
+  const date = $("#noteDateInput").value;
+  if (!title) return;
+
+  if (editingNoteId) {
+    const note = notes.find((item) => item.id === editingNoteId);
+    if (!note) return;
+
+    note.title = title;
+    note.body = body;
+    note.date = date;
+    note.updatedAt = new Date().toISOString();
+  } else {
+    notes.push({
+      id: crypto.randomUUID(),
+      title,
+      body,
+      date,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  const message = editingNoteId ? "Note updated" : "Note added";
+  saveNotes();
+  renderNotes();
+  resetNoteForm();
+  showToast(message);
+});
+
 $("#taskForm").addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -328,8 +473,15 @@ $("#taskForm").addEventListener("submit", (event) => {
   renderApp();
 });
 
-$("#newTaskButton").addEventListener("click", () => openTaskModal());
-$("#addTaskLink").addEventListener("click", () => openTaskModal());
+$("#newTaskButton").addEventListener("click", () => {
+  showTracker();
+  openTaskModal();
+});
+$("#addTaskLink").addEventListener("click", () => {
+  showTracker();
+  openTaskModal();
+});
+$("#notesNavButton").addEventListener("click", showNotes);
 $("#closeModal").addEventListener("click", closeTaskModal);
 
 $("#taskModal").addEventListener("click", (event) => {
@@ -454,3 +606,4 @@ if (localStorage.getItem("daymark-theme") === "dark") {
 }
 
 renderApp();
+renderNotes();

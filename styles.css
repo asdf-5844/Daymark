@@ -930,3 +930,198 @@ body.dark .modal input,body.dark .modal select{
 
 
 }
+
+/* Task notes and general reminders */
+.task-note-card,
+.notes-card {
+  margin-top: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(251, 250, 246, .82);
+  box-shadow: var(--shadow)
+}
+
+.task-note-card { padding: 20px 23px }
+
+.task-note-heading,
+.notes-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px
+}
+
+.task-note-heading h2,
+.notes-heading h2 {
+  margin-top: 4px;
+  font-size: 19px
+}
+
+.task-note-heading > span {
+  color: var(--muted);
+  font-size: 11px
+}
+
+.task-note-card textarea,
+.note-form textarea,
+.note-form input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg);
+  color: var(--ink);
+  font: 500 14px/1.5 "DM Sans";
+  outline: none
+}
+
+.task-note-card textarea {
+  min-height: 90px;
+  margin-top: 15px;
+  padding: 13px;
+  resize: vertical
+}
+
+.task-note-card textarea:focus,
+.note-form textarea:focus,
+.note-form input:focus { border-color: var(--green) }
+
+.notes-card { padding: 25px 27px }
+.notes-heading p { margin: 5px 0 0; color: var(--muted); font-size: 12px }
+
+.note-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 22px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line)
+}
+
+.note-form label { color: var(--ink); font-size: 12px; font-weight: 700 }
+.note-form label span { color: var(--muted); font-weight: 500 }
+.note-form input { height: 44px; margin-top: 7px; padding: 0 12px }
+.note-details-field { grid-column: 1 / -1 }
+.note-form textarea { min-height: 76px; margin-top: 7px; padding: 11px 12px; resize: vertical }
+.note-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px
+}
+
+.note-submit { justify-self: start }
+.note-form-actions .secondary-button { padding: 0 16px }
+.notes-list { display: grid; gap: 9px; margin-top: 20px }
+
+.note-item {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  align-items: center;
+  gap: 15px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg)
+}
+
+.note-date { display: flex; flex-direction: column; color: var(--green); font-size: 11px }
+.note-date strong { font: 700 12px Manrope }
+.note-date.no-date { letter-spacing: 1.4px; color: var(--muted); font-weight: 700 }
+.note-content strong { font: 700 14px Manrope }
+.note-content p { margin: 4px 0 0; color: var(--muted); font-size: 12px; white-space: pre-wrap }
+.note-actions { display: flex; align-items: center; gap: 5px }
+.edit-note,
+.delete-note { border: 0; background: transparent; color: var(--muted); cursor: pointer }
+.edit-note { padding: 7px 8px; border-radius: 6px; font-size: 11px }
+.edit-note:hover { background: var(--paper); color: var(--green) }
+.delete-note { font-size: 20px }
+.delete-note:hover { color: var(--orange) }
+
+.empty-notes { padding: 28px 10px 8px; text-align: center; color: var(--muted) }
+.empty-notes[hidden] { display: none }
+.empty-notes span { display: block; margin-bottom: 5px; color: var(--green); font-size: 24px }
+.empty-notes strong { color: var(--ink); font: 700 13px Manrope }
+.empty-notes p { margin: 4px 0; font-size: 12px }
+
+body.dark .task-note-card,
+body.dark .notes-card { background: #163630 }
+
+@media(max-width: 620px) {
+  .note-form { grid-template-columns: 1fr }
+  .note-details-field { grid-column: auto }
+  .note-item { grid-template-columns: 1fr 30px }
+  .note-date { grid-column: 1 / -1; flex-direction: row; gap: 7px }
+}
+/* Separate notes page navigation */
+[hidden] { display: none !important }
+
+.notes-nav-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 17px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: left
+}
+
+.notes-nav-button span:first-child {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--paper);
+  color: var(--green);
+  font-size: 17px
+}
+
+.notes-nav-button:hover,
+.notes-nav-button.active {
+  border-color: var(--green);
+  background: #e3eadc;
+  color: var(--ink)
+}
+
+.notes-page { align-self: start }
+.notes-page .notes-card { margin-top: 0 }
+
+body.dark .notes-nav-button:hover,
+body.dark .notes-nav-button.active {
+  background: #31574f;
+  color: #fff
+}
+/* Larger saved note cards */
+.note-item {
+  grid-template-columns: 132px 1fr auto;
+  gap: 18px;
+  padding: 20px;
+  min-height: 96px
+}
+
+.note-date { font-size: 13px }
+.note-date strong { font-size: 14px }
+.note-content strong { font-size: 17px }
+.note-content p { margin-top: 6px; font-size: 14px; line-height: 1.55 }
+.note-actions { gap: 8px }
+.edit-note { padding: 9px 11px; font-size: 13px }
+.delete-note { font-size: 24px }
+/* Compact task context card */
+.task-note-card {
+  margin-top: 12px;
+  padding: 14px 18px
+}
+
+.task-note-heading h2 {
+  font-size: 16px
+}
+
+.task-note-card textarea {
+  min-height: 54px;
+  height: 54px;
+  margin-top: 8px;
+  padding: 9px 11px
+}

@@ -30,6 +30,7 @@
       <div class="eyebrow">YOUR JOURNEY</div>
       <nav id="taskList" class="task-list" aria-label="Your tasks"></nav>
       <button class="add-task-link" id="addTaskLink">＋&nbsp;&nbsp;Add a task</button>
+      <button class="notes-nav-button" id="notesNavButton"><span>✎</span><span>Notes & reminders</span></button>
       <div class="sidebar-quote">
         <span class="quote-mark">“</span>
         <p>Small disciplines repeated with consistency lead to great achievements.</p>
@@ -60,6 +61,16 @@
         <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
       </div>
 
+      <section class="task-note-card">
+        <div class="task-note-heading">
+          <div>
+            <div class="eyebrow">TASK NOTE</div>
+            <h2>Keep the purpose close</h2>
+          </div>
+          <span id="taskNoteStatus" aria-live="polite">Saved</span>
+        </div>
+        <textarea id="taskNoteInput" maxlength="1200" placeholder="Add any context for this task..."></textarea>
+      </section>
       <section class="stats-grid">
         <article class="stat-card streak-card">
           <div class="stat-icon flame">♨</div>
@@ -98,6 +109,42 @@
       <section class="encouragement">
         <div class="spark">✦</div>
         <div><strong id="encouragementTitle">Your journey starts today.</strong><p id="encouragementText">Show up for yourself—one day at a time.</p></div>
+      </section>
+
+    </section>
+
+    <section class="content notes-page" id="notesPage" hidden>
+      <section class="notes-card" id="notesSection">
+        <div class="notes-heading">
+          <div>
+            <div class="eyebrow">NOTES & REMINDERS</div>
+            <h2>Things to remember</h2>
+          </div>
+        </div>
+        <form class="note-form" id="noteForm">
+          <label>
+            Title
+            <input id="noteTitleInput" maxlength="80" placeholder="e.g. Robotics team meeting" required />
+          </label>
+          <label>
+            Date and time <span>(optional)</span>
+            <input id="noteDateInput" type="datetime-local" />
+          </label>
+          <label class="note-details-field">
+            Details <span>(optional)</span>
+            <textarea id="noteBodyInput" maxlength="1000" placeholder="Room number, preparation, links, or anything else..."></textarea>
+          </label>
+          <div class="note-form-actions">
+            <button type="submit" class="primary-button note-submit" id="saveNoteButton">Add note</button>
+            <button type="button" class="secondary-button" id="cancelNoteEdit" hidden>Cancel edit</button>
+          </div>
+        </form>
+        <div class="notes-list" id="notesList"></div>
+        <div class="empty-notes" id="emptyNotes">
+          <span>✎</span>
+          <strong>No notes yet</strong>
+          <p>Add a reminder or thought you do not want to lose.</p>
+        </div>
       </section>
     </section>
   </main>
