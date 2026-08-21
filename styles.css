@@ -10,6 +10,48 @@
   --shadow: 0 14px 35px rgba(40,54,47,.07)
 }
 
+/* Past-day confirmation */
+.confirmation-modal {
+  max-width: 440px;
+  text-align: center
+}
+
+.confirmation-modal label { text-align: left }
+
+.warning-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 20px;
+  border: 1px solid rgba(239, 113, 63, .35);
+  border-radius: 50%;
+  background: rgba(239, 113, 63, .12);
+  color: var(--orange);
+  font: 800 28px Manrope
+}
+
+.confirmation-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 10px;
+  margin-top: 24px
+}
+
+.secondary-button {
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: transparent;
+  cursor: pointer
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+  opacity: .42;
+  transform: none
+}
+
 
 *{
   box-sizing: border-box
@@ -645,23 +687,36 @@ h1{
 }
 
 .icon-picker{
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px
 }
 
 .icon-picker button{
-  width: 42px;
-  height: 42px;
+  min-width: 0;
+  height: 58px;
   border: 1px solid var(--line);
   border-radius: 9px;
   background: var(--bg);
   cursor: pointer;
-  font-size: 18px
+  color: var(--muted);
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px
+}
+
+.icon-picker button span{
+  color: var(--ink);
+  font-size: 19px
 }
 
 .icon-picker button.selected{
   background: var(--lime);
-  border-color: var(--green)
+  border-color: var(--green);
+  color: #173f39
 }
 
 .modal-submit{
@@ -703,22 +758,64 @@ h1{
 
 
 body.dark{
-  --bg: #122d29;
-  --paper: #173833;
-  --ink: #eef3e9;
-  --muted: #a4b1aa;
-  --line: #315049;
-  --green: #a9d85c;
+  --bg: #0d2421;
+  --paper: #183a35;
+  --ink: #f5f8f2;
+  --muted: #c3d0ca;
+  --line: #53736c;
+  --green: #b8e56b;
   --lime: #b9e66a;
   --shadow: 0 14px 35px rgba(0,0,0,.18)
 }
 
 body.dark .task-item.active{
-  background: #294940
+  background: #31574f;
+  color: #fff
 }
 
 body.dark .mini-icon,body.dark .stat-card{
-  background: #1b3c36
+  background: #20463f
+}
+
+body.dark .calendar-card{
+  background: #163630
+}
+
+body.dark .task-item,
+body.dark .eyebrow,
+body.dark .calendar-footer,
+body.dark .calendar-footer p,
+body.dark .weekdays span,
+body.dark .goal-copy,
+body.dark .encouragement p{
+  color: #c3d0ca
+}
+
+body.dark .day.other{
+  color: #91a69f;
+  background: rgba(5, 20, 17, .25)
+}
+
+body.dark .day:not(.other):not(.completed){
+  color: #f5f8f2
+}
+
+body.dark .calendar-controls button,
+body.dark .more-button,
+body.dark .icon-button{
+  color: #f5f8f2;
+  background: #21463f
+}
+
+body.dark .progress-track{
+  background: #49655f
+}
+
+body.dark .calendar-card,
+body.dark .stat-card,
+body.dark .day,
+body.dark .weekdays{
+  border-color: #53736c
 }
 
 body.dark .task-icon,body.dark .streak-card .stat-icon{

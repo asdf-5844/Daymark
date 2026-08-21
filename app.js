@@ -5,17 +5,31 @@ today.setHours(0, 0, 0, 0);
 
 const starterTask = {
   id: crypto.randomUUID(),
-  name: "Morning pages",
-  icon: "✦",
+  name: "Read for 20 minutes",
+  icon: "📖",
   goal: 365,
   completions: [],
 };
 
 let tasks = JSON.parse(localStorage.getItem("daymark-tasks") || "null") || [starterTask];
+
+// Replace the original, unclear demo task without touching customized tasks.
+tasks = tasks.map((task) => {
+  const isUntouchedOriginal =
+    task.name === "Morning pages" &&
+    task.goal === 365 &&
+    task.completions.length === 0;
+
+  return isUntouchedOriginal
+    ? { ...task, name: "Read for 20 minutes", icon: "📖" }
+    : task;
+});
+
 let activeTaskId = localStorage.getItem("daymark-active") || tasks[0].id;
 let displayedMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-let selectedIcon = "✦";
+let selectedIcon = "📖";
 let editingTaskId = null;
+let pendingPastDate = null;
 
 // Storage and date helpers
 
@@ -196,20 +210,54 @@ function toggleDay(key) {
   if (completionIndex >= 0) {
     task.completions.splice(completionIndex, 1);
     showToast("Check-in removed");
-  } else {
-    task.completions.push(key);
-    showToast("Day marked complete — nice work!");
+    saveTasks();
+    renderApp();
+    return;
   }
 
+  if (key !== getDateKey(today)) {
+    openPastDayModal(key);
+    return;
+  }
+
+  markDayComplete(key);
+}
+
+function markDayComplete(key) {
+  getActiveTask().completions.push(key);
   saveTasks();
   renderApp();
+  showToast("Day marked complete — nice work!");
+}
+
+function openPastDayModal(key) {
+  pendingPastDate = key;
+  const readableDate = parseDateKey(key).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  $("#pastDayMessage").textContent = `You are about to record ${readableDate} as completed. Only continue if you completed this task on that day.`;
+  $("#pastDayConfirmation").value = "";
+  $("#confirmPastDay").disabled = true;
+  $("#pastDayModal").classList.add("open");
+  setTimeout(() => $("#pastDayConfirmation").focus(), 50);
+}
+
+function closePastDayModal() {
+  $("#pastDayModal").classList.remove("open");
+  $("#pastDayConfirmation").value = "";
+  $("#confirmPastDay").disabled = true;
+  pendingPastDate = null;
 }
 
 function openTaskModal(editExistingTask = false) {
   editingTaskId = editExistingTask ? activeTaskId : null;
   const task = editExistingTask ? getActiveTask() : null;
 
-  selectedIcon = task?.icon || "✦";
+  selectedIcon = task?.icon || "📖";
   $("#modalTitle").textContent = editExistingTask ? "Edit your task" : "Create a new task";
   $("#submitTask").textContent = editExistingTask ? "Save changes" : "Start tracking";
   $("#taskNameInput").value = task?.name || "";
@@ -288,6 +336,25 @@ $("#taskModal").addEventListener("click", (event) => {
   if (event.target === $("#taskModal")) closeTaskModal();
 });
 
+$("#pastDayConfirmation").addEventListener("input", (event) => {
+  $("#confirmPastDay").disabled = event.target.value.trim() !== "Continue";
+});
+
+$("#pastDayForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  if ($("#pastDayConfirmation").value.trim() !== "Continue" || !pendingPastDate) return;
+
+  const confirmedDate = pendingPastDate;
+  closePastDayModal();
+  markDayComplete(confirmedDate);
+});
+
+$("#closePastDayModal").addEventListener("click", closePastDayModal);
+$("#cancelPastDay").addEventListener("click", closePastDayModal);
+$("#pastDayModal").addEventListener("click", (event) => {
+  if (event.target === $("#pastDayModal")) closePastDayModal();
+});
+
 $("#iconPicker").addEventListener("click", (event) => {
   const button = event.target.closest("button");
   if (!button) return;
@@ -333,6 +400,22 @@ $("#resetTaskButton").addEventListener("click", () => {
   $("#taskMenu").classList.remove("open");
 });
 
+$("#restoreStarterButton").addEventListener("click", () => {
+  const shouldRestore = confirm(
+    "Restore the starter setup? This will permanently delete every task and check-in on this device.",
+  );
+
+  if (!shouldRestore) return;
+
+  const restoredTask = { ...starterTask, id: crypto.randomUUID() };
+  tasks = [restoredTask];
+  activeTaskId = restoredTask.id;
+  displayedMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  saveTasks();
+  renderApp();
+  $("#taskMenu").classList.remove("open");
+  showToast("Starter setup restored");
+});
 $("#deleteTaskButton").addEventListener("click", () => {
   if (tasks.length === 1) {
     showToast("Keep at least one task");
@@ -359,6 +442,7 @@ $("#themeButton").addEventListener("click", () => {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeTaskModal();
+    closePastDayModal();
     $("#taskMenu").classList.remove("open");
   }
 });

@@ -50,6 +50,7 @@
         <div class="task-menu" id="taskMenu">
           <button id="editTaskButton">Edit task</button>
           <button id="resetTaskButton">Clear check-ins</button>
+          <button id="restoreStarterButton">Restore starter setup</button>
           <button id="deleteTaskButton" class="danger">Delete task</button>
         </div>
       </div>
@@ -110,7 +111,12 @@
       <label>Task name<input id="taskNameInput" maxlength="40" placeholder="e.g. Read for 20 minutes" required /></label>
       <label>Choose an icon</label>
       <div class="icon-picker" id="iconPicker">
-        <button type="button" data-icon="✦" class="selected">✦</button><button type="button" data-icon="◒">◒</button><button type="button" data-icon="♨">♨</button><button type="button" data-icon="⌁">⌁</button><button type="button" data-icon="♡">♡</button><button type="button" data-icon="☀">☀</button>
+        <button type="button" data-icon="📖" class="selected"><span>📖</span>Read</button>
+        <button type="button" data-icon="➗"><span>➗</span>Math</button>
+        <button type="button" data-icon="💪"><span>💪</span>Exercise</button>
+        <button type="button" data-icon="🎓"><span>🎓</span>Study / Homework</button>
+        <button type="button" data-icon="🤖"><span>🤖</span>Robotics</button>
+        <button type="button" data-icon="⭐"><span>⭐</span>Other</button>
       </div>
       <div class="form-row">
         <label>Goal length<input id="goalInput" type="number" min="1" max="10000" value="365" required /></label>
@@ -121,6 +127,21 @@
   </div>
 
   <div class="toast" id="toast"><span>✓</span><p></p></div>
+  <div class="modal-backdrop" id="pastDayModal" role="dialog" aria-modal="true" aria-labelledby="pastDayTitle">
+    <form class="modal confirmation-modal" id="pastDayForm">
+      <button type="button" class="modal-close" id="closePastDayModal" aria-label="Close">×</button>
+      <div class="warning-icon" aria-hidden="true">!</div>
+      <div class="eyebrow">PAST-DATE CHECK-IN</div>
+      <h2 id="pastDayTitle">Mark a previous day?</h2>
+      <p class="modal-intro" id="pastDayMessage"></p>
+      <label for="pastDayConfirmation">Type <strong>Continue</strong> to confirm</label>
+      <input id="pastDayConfirmation" type="text" placeholder="Continue" autocomplete="off" spellcheck="false" />
+      <div class="confirmation-actions">
+        <button type="button" class="secondary-button" id="cancelPastDay">Cancel</button>
+        <button type="submit" class="primary-button" id="confirmPastDay" disabled>Mark complete</button>
+      </div>
+    </form>
+  </div>
   <script src="app.js"></script>
 </body>
 </html>
