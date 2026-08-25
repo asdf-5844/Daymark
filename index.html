@@ -31,6 +31,7 @@
       <nav id="taskList" class="task-list" aria-label="Your tasks"></nav>
       <button class="add-task-link" id="addTaskLink">＋&nbsp;&nbsp;Add a task</button>
       <button class="notes-nav-button" id="notesNavButton"><span>✎</span><span>Notes & reminders</span></button>
+      <button class="notes-nav-button" id="goalsNavButton"><span>◎</span><span>Goals</span></button>
       <div class="sidebar-quote">
         <span class="quote-mark">“</span>
         <p>Small disciplines repeated with consistency lead to great achievements.</p>
@@ -145,6 +146,61 @@
           <strong>No notes yet</strong>
           <p>Add a reminder or thought you do not want to lose.</p>
         </div>
+        <section class="completed-notes-section" id="completedNotesSection" hidden>
+          <div class="completed-notes-heading">
+            <div>
+              <div class="eyebrow">ARCHIVE</div>
+              <h3>Completed</h3>
+            </div>
+            <span id="completedNotesCount">0 notes</span>
+          </div>
+          <div class="notes-list completed-notes-list" id="completedNotesList"></div>
+        </section>
+      </section>
+    </section>
+
+    <section class="content goals-page" id="goalsPage" hidden>
+      <section class="goals-card">
+        <div class="goals-heading">
+          <div>
+            <div class="eyebrow">GOALS</div>
+            <h2>What you are working toward</h2>
+          </div>
+        </div>
+        <form class="goal-form" id="goalForm">
+          <label>
+            Goal
+            <input id="goalTitleInput" maxlength="100" placeholder="e.g. Get all A's in the first quarter" required />
+          </label>
+          <label>
+            Target date <span>(optional)</span>
+            <input id="goalDateInput" type="date" />
+          </label>
+          <label class="goal-details-field">
+            Why this matters or how you will achieve it <span>(optional)</span>
+            <textarea id="goalBodyInput" maxlength="1200" placeholder="Add milestones, motivation, or a plan..."></textarea>
+          </label>
+          <div class="goal-form-actions">
+            <button type="submit" class="primary-button" id="saveGoalButton">Add goal</button>
+            <button type="button" class="secondary-button" id="cancelGoalEdit" hidden>Cancel edit</button>
+          </div>
+        </form>
+        <div class="goals-list" id="goalsList"></div>
+        <div class="empty-goals" id="emptyGoals">
+          <span>◎</span>
+          <strong>No goals yet</strong>
+          <p>Write down something meaningful you want to achieve.</p>
+        </div>
+        <section class="completed-goals-section" id="completedGoalsSection" hidden>
+          <div class="completed-goals-heading">
+            <div>
+              <div class="eyebrow">ACHIEVED</div>
+              <h3>Completed goals</h3>
+            </div>
+            <span id="completedGoalsCount">0 goals</span>
+          </div>
+          <div class="goals-list" id="completedGoalsList"></div>
+        </section>
       </section>
     </section>
   </main>
@@ -169,6 +225,14 @@
         <label>Goal length<input id="goalInput" type="number" min="1" max="10000" value="365" required /></label>
         <label>Unit<select id="goalUnit"><option value="days">days</option><option value="weeks">weeks</option><option value="months">months</option><option value="years">years</option></select></label>
       </div>
+      <label class="goal-style-field">
+        Goal style
+        <select id="goalModeInput">
+          <option value="cumulative">Cumulative — total completed days</option>
+          <option value="consecutive">Consecutive — current streak</option>
+        </select>
+        <small>Cumulative progress never decreases. Consecutive progress resets when your streak breaks.</small>
+      </label>
       <button type="submit" class="primary-button modal-submit" id="submitTask">Start tracking</button>
     </form>
   </div>

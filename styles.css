@@ -1125,3 +1125,134 @@ body.dark .notes-nav-button.active {
   margin-top: 8px;
   padding: 9px 11px
 }
+/* Completed notes archive */
+.completed-notes-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line)
+}
+
+.completed-notes-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px
+}
+
+.completed-notes-heading h3 {
+  margin: 4px 0 0;
+  font: 700 18px Manrope
+}
+
+.completed-notes-heading > span {
+  color: var(--muted);
+  font-size: 12px
+}
+
+.completed-note {
+  opacity: .78
+}
+
+.completed-note .note-content strong {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px
+}
+
+.toggle-note,
+.edit-note,
+.delete-note {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer
+}
+
+.toggle-note {
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--green);
+  font-size: 12px
+}
+
+.toggle-note:hover {
+  border-color: var(--green);
+  background: var(--paper)
+}
+.note-completed-date {
+  display: block;
+  margin-top: 8px;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 600
+}
+/* Goals page */
+.goals-page { align-self: start }
+.goals-card {
+  padding: 25px 27px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(251, 250, 246, .82);
+  box-shadow: var(--shadow)
+}
+.goals-heading h2 { margin: 4px 0 0; font-size: 21px }
+.goal-form { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; margin-top: 22px; padding-bottom: 22px; border-bottom: 1px solid var(--line) }
+.goal-form label { font-size: 12px; font-weight: 700 }
+.goal-form label span { color: var(--muted); font-weight: 500 }
+.goal-form input,
+.goal-form textarea { width: 100%; margin-top: 7px; border: 1px solid var(--line); border-radius: 9px; background: var(--bg); color: var(--ink); font: 500 14px/1.5 "DM Sans"; outline: none }
+.goal-form input { height: 44px; padding: 0 12px }
+.goal-form textarea { min-height: 76px; padding: 11px 12px; resize: vertical }
+.goal-form input:focus,
+.goal-form textarea:focus { border-color: var(--green) }
+.goal-details-field { grid-column: 1 / -1 }
+.goal-form-actions { display: flex; gap: 9px; align-items: center }
+.goal-form-actions .secondary-button { padding: 0 16px }
+.goals-list { display: grid; gap: 9px; margin-top: 20px }
+.goal-item { display: grid; grid-template-columns: 125px 1fr auto; align-items: center; gap: 18px; min-height: 96px; padding: 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg) }
+.goal-target-date { display: flex; flex-direction: column; gap: 3px }
+.goal-target-date span { color: var(--muted); font: 700 9px Manrope; letter-spacing: 1.3px }
+.goal-target-date strong { color: var(--green); font: 700 13px Manrope }
+.goal-content strong { font: 700 17px Manrope }
+.goal-content p { margin: 6px 0 0; color: var(--muted); font-size: 14px; line-height: 1.55; white-space: pre-wrap }
+.goal-actions { display: flex; align-items: center; gap: 6px }
+.toggle-goal,
+.edit-goal,
+.delete-goal { border: 0; background: transparent; color: var(--muted); cursor: pointer }
+.toggle-goal { padding: 9px 11px; border: 1px solid var(--line); border-radius: 7px; color: var(--green); font-size: 12px }
+.toggle-goal:hover { border-color: var(--green); background: var(--paper) }
+.edit-goal { padding: 9px; font-size: 12px }
+.edit-goal:hover { color: var(--green) }
+.delete-goal { font-size: 22px }
+.delete-goal:hover { color: var(--orange) }
+.empty-goals { padding: 32px 10px 8px; text-align: center; color: var(--muted) }
+.empty-goals span { display: block; color: var(--green); font-size: 27px }
+.empty-goals strong { color: var(--ink); font: 700 13px Manrope }
+.empty-goals p { margin: 4px 0; font-size: 12px }
+.completed-goals-section { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line) }
+.completed-goals-heading { display: flex; align-items: end; justify-content: space-between }
+.completed-goals-heading h3 { margin: 4px 0 0; font: 700 18px Manrope }
+.completed-goals-heading > span { color: var(--muted); font-size: 12px }
+.completed-goal { opacity: .78 }
+.completed-goal .goal-content strong { text-decoration: line-through }
+body.dark .goals-card { background: #163630 }
+
+@media(max-width: 700px) {
+  .goal-form { grid-template-columns: 1fr }
+  .goal-details-field { grid-column: auto }
+  .goal-item { grid-template-columns: 1fr }
+  .goal-actions { justify-content: flex-start }
+}
+/* Per-task progress mode */
+.goal-style-field {
+  margin-top: 16px !important
+}
+
+.goal-style-field small {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.45
+}

@@ -1,4 +1,6 @@
-const $ = (selector) => document.querySelector(selector);
+function $(selector) {
+  return document.querySelector(selector);
+}
 
 const today = new Date();
 today.setHours(0, 0, 0, 0);
@@ -8,6 +10,7 @@ const starterTask = {
   name: "Read for 20 minutes",
   icon: "📖",
   goal: 365,
+  goalMode: "cumulative",
   completions: [],
 };
 
@@ -33,6 +36,8 @@ let pendingPastDate = null;
 let notes = JSON.parse(localStorage.getItem("daymark-notes") || "null") || [];
 let taskNoteTimer = null;
 let editingNoteId = null;
+let goals = JSON.parse(localStorage.getItem("daymark-goals") || "null") || [];
+let editingGoalId = null;
 
 // Storage and date helpers
 
@@ -43,6 +48,10 @@ function saveTasks() {
 
 function saveNotes() {
   localStorage.setItem("daymark-notes", JSON.stringify(notes));
+}
+
+function saveGoals() {
+  localStorage.setItem("daymark-goals", JSON.stringify(goals));
 }
 
 function getActiveTask() {
@@ -102,19 +111,34 @@ function calculateStreaks(task) {
 
 // Rendering
 
+function setActivePage(page) {
+  $("#mainContent").hidden = page !== "tracker";
+  $("#notesPage").hidden = page !== "notes";
+  $("#goalsPage").hidden = page !== "goals";
+  $("#notesNavButton").classList.toggle("active", page === "notes");
+  $("#goalsNavButton").classList.toggle("active", page === "goals");
+
+  document.querySelectorAll(".task-item").forEach((button) => {
+    button.classList.toggle(
+      "active",
+      page === "tracker" && button.dataset.id === activeTaskId,
+    );
+  });
+}
+
 function showTracker() {
-  $("#mainContent").hidden = false;
-  $("#notesPage").hidden = true;
-  $("#notesNavButton").classList.remove("active");
+  setActivePage("tracker");
 }
 
 function showNotes() {
-  $("#mainContent").hidden = true;
-  $("#notesPage").hidden = false;
-  $("#notesNavButton").classList.add("active");
+  setActivePage("notes");
   renderNotes();
 }
 
+function showGoals() {
+  setActivePage("goals");
+  renderGoals();
+}
 function renderTaskList() {
   $("#taskList").innerHTML = tasks
     .map(
@@ -189,47 +213,87 @@ function renderCalendar() {
 }
 
 function renderNotes() {
-  const orderedNotes = [...notes].sort((first, second) => {
+  const sortNotes = (items) => [...items].sort((first, second) => {
+    if (!first.date && !second.date) {
+      return new Date(second.createdAt) - new Date(first.createdAt);
+    }
     if (!first.date) return 1;
     if (!second.date) return -1;
     return new Date(first.date) - new Date(second.date);
   });
 
-  $("#notesList").innerHTML = orderedNotes
-    .map((note) => {
-      const date = note.date ? new Date(note.date) : null;
-      const dateLabel = date
-        ? date.toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })
-        : "";
-      const timeLabel = date
-        ? date.toLocaleTimeString(undefined, {
-            hour: "numeric",
-            minute: "2-digit",
-          })
-        : "";
+  const activeNotes = sortNotes(notes.filter((note) => !note.completed));
+  const completedNotes = sortNotes(notes.filter((note) => note.completed));
 
-      return `
-        <article class="note-item">
-          <div class="note-date ${date ? "" : "no-date"}">
-            ${date ? `<strong>${dateLabel}</strong><span>${timeLabel}</span>` : "NOTE"}
-          </div>
-          <div class="note-content">
-            <strong>${escapeHtml(note.title)}</strong>
-            ${note.body ? `<p>${escapeHtml(note.body)}</p>` : ""}
-          </div>
-          <div class="note-actions">
-            <button class="edit-note" data-note-id="${note.id}" aria-label="Edit ${escapeHtml(note.title)}">Edit</button>
-            <button class="delete-note" data-note-id="${note.id}" aria-label="Delete ${escapeHtml(note.title)}">×</button>
-          </div>
-        </article>`;
-    })
+  const createNoteMarkup = (note, isCompleted) => {
+    const date = note.date ? new Date(note.date) : null;
+    const dateLabel = date
+      ? date.toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "";
+    const timeLabel = date
+      ? date.toLocaleTimeString(undefined, {
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      : "";
+    const completedDate = note.completedAt ? new Date(note.completedAt) : null;
+    const completedLabel = completedDate
+      ? completedDate.toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      : "Date unavailable";
+
+    return `
+      <article class="note-item ${isCompleted ? "completed-note" : ""}">
+        <div class="note-date ${date ? "" : "no-date"}">
+          ${date ? `<strong>${dateLabel}</strong><span>${timeLabel}</span>` : "NOTE"}
+        </div>
+        <div class="note-content">
+          <strong>${escapeHtml(note.title)}</strong>
+          ${note.body ? `<p>${escapeHtml(note.body)}</p>` : ""}
+          ${isCompleted ? `<span class="note-completed-date">Completed ${completedLabel}</span>` : ""}
+        </div>
+        <div class="note-actions">
+          <button class="toggle-note" data-note-id="${note.id}">${isCompleted ? "Restore" : "Complete"}</button>
+          ${isCompleted ? "" : `<button class="edit-note" data-note-id="${note.id}" aria-label="Edit ${escapeHtml(note.title)}">Edit</button>`}
+          <button class="delete-note" data-note-id="${note.id}" aria-label="Delete ${escapeHtml(note.title)}">×</button>
+        </div>
+      </article>`;
+  };
+
+  $("#notesList").innerHTML = activeNotes
+    .map((note) => createNoteMarkup(note, false))
+    .join("");
+  $("#completedNotesList").innerHTML = completedNotes
+    .map((note) => createNoteMarkup(note, true))
     .join("");
 
-  $("#emptyNotes").hidden = notes.length > 0;
+  $("#emptyNotes").hidden = activeNotes.length > 0;
+  $("#completedNotesSection").hidden = completedNotes.length === 0;
+  $("#completedNotesCount").textContent =
+    `${completedNotes.length} note${completedNotes.length === 1 ? "" : "s"}`;
+
+  document.querySelectorAll(".toggle-note").forEach((button) => {
+    button.addEventListener("click", () => {
+      const note = notes.find((item) => item.id === button.dataset.noteId);
+      if (!note) return;
+
+      note.completed = !note.completed;
+      note.completedAt = note.completed ? new Date().toISOString() : null;
+      if (editingNoteId === note.id) resetNoteForm();
+      saveNotes();
+      renderNotes();
+      showToast(note.completed ? "Note completed" : "Note restored");
+    });
+  });
 
   document.querySelectorAll(".edit-note").forEach((button) => {
     button.addEventListener("click", () => {
@@ -257,6 +321,105 @@ function renderNotes() {
     });
   });
 }
+function renderGoals() {
+  const sortGoals = (items) => [...items].sort((first, second) => {
+    if (!first.targetDate && !second.targetDate) {
+      return new Date(second.createdAt) - new Date(first.createdAt);
+    }
+    if (!first.targetDate) return 1;
+    if (!second.targetDate) return -1;
+    return new Date(first.targetDate) - new Date(second.targetDate);
+  });
+
+  const activeGoals = sortGoals(goals.filter((goal) => !goal.completed));
+  const completedGoals = sortGoals(goals.filter((goal) => goal.completed));
+
+  const createGoalMarkup = (goal, isCompleted) => {
+    const targetDate = goal.targetDate
+      ? new Date(`${goal.targetDate}T00:00:00`)
+      : null;
+    const targetLabel = targetDate
+      ? targetDate.toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "No target date";
+    const completedLabel = goal.completedAt
+      ? new Date(goal.completedAt).toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "";
+
+    return `
+      <article class="goal-item ${isCompleted ? "completed-goal" : ""}">
+        <div class="goal-target-date">
+          <span>${isCompleted ? "ACHIEVED" : "TARGET"}</span>
+          <strong>${isCompleted ? completedLabel : targetLabel}</strong>
+        </div>
+        <div class="goal-content">
+          <strong>${escapeHtml(goal.title)}</strong>
+          ${goal.body ? `<p>${escapeHtml(goal.body)}</p>` : ""}
+        </div>
+        <div class="goal-actions">
+          <button class="toggle-goal" data-goal-id="${goal.id}">${isCompleted ? "Restore" : "Complete"}</button>
+          ${isCompleted ? "" : `<button class="edit-goal" data-goal-id="${goal.id}">Edit</button>`}
+          <button class="delete-goal" data-goal-id="${goal.id}" aria-label="Delete ${escapeHtml(goal.title)}">×</button>
+        </div>
+      </article>`;
+  };
+
+  $("#goalsList").innerHTML = activeGoals
+    .map((goal) => createGoalMarkup(goal, false))
+    .join("");
+  $("#completedGoalsList").innerHTML = completedGoals
+    .map((goal) => createGoalMarkup(goal, true))
+    .join("");
+  $("#emptyGoals").hidden = activeGoals.length > 0;
+  $("#completedGoalsSection").hidden = completedGoals.length === 0;
+  $("#completedGoalsCount").textContent =
+    `${completedGoals.length} goal${completedGoals.length === 1 ? "" : "s"}`;
+
+  document.querySelectorAll(".toggle-goal").forEach((button) => {
+    button.addEventListener("click", () => {
+      const goal = goals.find((item) => item.id === button.dataset.goalId);
+      if (!goal) return;
+      goal.completed = !goal.completed;
+      goal.completedAt = goal.completed ? new Date().toISOString() : null;
+      if (editingGoalId === goal.id) resetGoalForm();
+      saveGoals();
+      renderGoals();
+      showToast(goal.completed ? "Goal completed" : "Goal restored");
+    });
+  });
+
+  document.querySelectorAll(".edit-goal").forEach((button) => {
+    button.addEventListener("click", () => {
+      const goal = goals.find((item) => item.id === button.dataset.goalId);
+      if (!goal) return;
+      editingGoalId = goal.id;
+      $("#goalTitleInput").value = goal.title;
+      $("#goalDateInput").value = goal.targetDate || "";
+      $("#goalBodyInput").value = goal.body || "";
+      $("#saveGoalButton").textContent = "Save changes";
+      $("#cancelGoalEdit").hidden = false;
+      $("#goalTitleInput").focus();
+      $("#goalForm").scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  });
+
+  document.querySelectorAll(".delete-goal").forEach((button) => {
+    button.addEventListener("click", () => {
+      goals = goals.filter((goal) => goal.id !== button.dataset.goalId);
+      if (editingGoalId === button.dataset.goalId) resetGoalForm();
+      saveGoals();
+      renderGoals();
+      showToast("Goal deleted");
+    });
+  });
+}
 
 function renderApp() {
   if (!tasks.length) {
@@ -267,26 +430,28 @@ function renderApp() {
 
   const task = getActiveTask();
   const totalDays = new Set(task.completions).size;
-  const percentage = Math.min(100, Math.round((totalDays / task.goal) * 100));
   const streaks = calculateStreaks(task);
+  const goalMode = task.goalMode || "cumulative";
+  const progressDays = goalMode === "consecutive" ? streaks.current : totalDays;
+  const percentage = Math.min(100, Math.round((progressDays / task.goal) * 100));
 
   $("#taskNoteInput").value = task.note || "";
   $("#taskNoteStatus").textContent = "Saved";
   $("#taskIcon").textContent = task.icon;
   $("#taskTitle").textContent = task.name;
-  $("#goalText").textContent = `Goal: ${task.goal.toLocaleString()} days`;
+  $("#goalText").textContent = `Goal: ${task.goal.toLocaleString()} ${goalMode} days`;
   $("#percentText").textContent = `${percentage}%`;
   $("#progressFill").style.width = `${percentage}%`;
   $("#currentStreak").textContent = streaks.current;
   $("#bestStreak").textContent = streaks.best;
   $("#totalDays").textContent = totalDays;
-  $("#totalGoal").textContent = `/ ${task.goal.toLocaleString()}`;
+  $("#totalGoal").textContent = goalMode === "consecutive" ? "all time" : `/ ${task.goal.toLocaleString()}`;
 
   $("#encouragementTitle").textContent = streaks.current
     ? `${streaks.current} day${streaks.current === 1 ? "" : "s"} strong. Keep the rhythm.`
     : "Your journey starts today.";
 
-  $("#encouragementText").textContent = totalDays >= task.goal
+  $("#encouragementText").textContent = progressDays >= task.goal
     ? "You reached your goal. That is something to celebrate."
     : "Show up for yourself—one day at a time.";
 
@@ -356,6 +521,7 @@ function openTaskModal(editExistingTask = false) {
   $("#taskNameInput").value = task?.name || "";
   $("#goalInput").value = task?.goal || 365;
   $("#goalUnit").value = "days";
+  $("#goalModeInput").value = task?.goalMode || "cumulative";
   $("#goalUnit").disabled = editExistingTask;
 
   document.querySelectorAll("#iconPicker button").forEach((button) => {
@@ -383,6 +549,47 @@ function showToast(message) {
 }
 
 // Event listeners
+
+function resetGoalForm() {
+  editingGoalId = null;
+  $("#goalForm").reset();
+  $("#saveGoalButton").textContent = "Add goal";
+  $("#cancelGoalEdit").hidden = true;
+}
+
+$("#cancelGoalEdit").addEventListener("click", resetGoalForm);
+
+$("#goalForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const title = $("#goalTitleInput").value.trim();
+  const targetDate = $("#goalDateInput").value;
+  const body = $("#goalBodyInput").value.trim();
+  if (!title) return;
+
+  if (editingGoalId) {
+    const goal = goals.find((item) => item.id === editingGoalId);
+    if (!goal) return;
+    goal.title = title;
+    goal.targetDate = targetDate;
+    goal.body = body;
+    goal.updatedAt = new Date().toISOString();
+  } else {
+    goals.push({
+      id: crypto.randomUUID(),
+      title,
+      targetDate,
+      body,
+      completed: false,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  const message = editingGoalId ? "Goal updated" : "Goal added";
+  saveGoals();
+  renderGoals();
+  resetGoalForm();
+  showToast(message);
+});
 
 $("#taskNoteInput").addEventListener("input", (event) => {
   getActiveTask().note = event.target.value;
@@ -426,6 +633,7 @@ $("#noteForm").addEventListener("submit", (event) => {
       body,
       date,
       createdAt: new Date().toISOString(),
+      completed: false,
     });
   }
 
@@ -441,6 +649,7 @@ $("#taskForm").addEventListener("submit", (event) => {
 
   const name = $("#taskNameInput").value.trim();
   const unit = $("#goalUnit").value;
+  const goalMode = $("#goalModeInput").value;
   let goal = Number($("#goalInput").value);
 
   if (!name || goal < 1) return;
@@ -450,6 +659,7 @@ $("#taskForm").addEventListener("submit", (event) => {
     task.name = name;
     task.icon = selectedIcon;
     task.goal = goal;
+    task.goalMode = goalMode;
     showToast("Task updated");
   } else {
     const unitMultipliers = { days: 1, weeks: 7, months: 30, years: 365 };
@@ -460,6 +670,7 @@ $("#taskForm").addEventListener("submit", (event) => {
       name,
       icon: selectedIcon,
       goal,
+      goalMode,
       completions: [],
     };
 
@@ -482,6 +693,7 @@ $("#addTaskLink").addEventListener("click", () => {
   openTaskModal();
 });
 $("#notesNavButton").addEventListener("click", showNotes);
+$("#goalsNavButton").addEventListener("click", showGoals);
 $("#closeModal").addEventListener("click", closeTaskModal);
 
 $("#taskModal").addEventListener("click", (event) => {
@@ -607,3 +819,4 @@ if (localStorage.getItem("daymark-theme") === "dark") {
 
 renderApp();
 renderNotes();
+renderGoals();
