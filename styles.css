@@ -1334,3 +1334,30 @@ body.dark .task-item.active .task-item-progress {
 body.dark .task-item-mode {
   background: rgba(255, 255, 255, .09)
 }
+/* Sidebar task reordering */
+.sidebar-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px
+}
+
+.sidebar-heading > span {
+  color: var(--muted);
+  font-size: 9px
+}
+
+.task-drag-handle {
+  flex: 0 0 auto;
+  color: var(--muted);
+  cursor: grab;
+  font-size: 13px;
+  letter-spacing: -3px;
+  opacity: .55
+}
+
+.task-item:hover .task-drag-handle { opacity: 1 }
+.task-item.dragging { opacity: .4 }
+.task-item.drag-over { box-shadow: inset 0 2px 0 var(--green) }
+.task-item.drag-over.drop-after { box-shadow: inset 0 -2px 0 var(--green) }
+.task-item:active .task-drag-handle { cursor: grabbing }

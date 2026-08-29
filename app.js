@@ -38,6 +38,7 @@ let taskNoteTimer = null;
 let editingNoteId = null;
 let goals = JSON.parse(localStorage.getItem("daymark-goals") || "null") || [];
 let editingGoalId = null;
+let draggedTaskId = null;
 
 // Storage and date helpers
 
@@ -154,7 +155,7 @@ function renderTaskList() {
       );
 
       return `
-        <button class="task-item ${task.id === activeTaskId ? "active" : ""}" data-id="${task.id}">
+        <button class="task-item ${task.id === activeTaskId ? "active" : ""}" data-id="${task.id}" draggable="true" title="Drag to reorder; Alt + Up/Down also works">
           <span class="mini-icon">${task.icon}</span>
           <span class="task-item-info">
             <span class="task-item-label">
@@ -177,6 +178,69 @@ function renderTaskList() {
       saveTasks();
       renderApp();
     });
+
+    button.addEventListener("dragstart", (event) => {
+      draggedTaskId = button.dataset.id;
+      button.classList.add("dragging");
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", draggedTaskId);
+    });
+
+    button.addEventListener("dragover", (event) => {
+      if (!draggedTaskId || draggedTaskId === button.dataset.id) return;
+      event.preventDefault();
+      document.querySelectorAll(".task-item.drag-over").forEach((item) => {
+        item.classList.remove("drag-over", "drop-after");
+      });
+      const placeAfter = event.clientY > button.getBoundingClientRect().top + button.offsetHeight / 2;
+      button.classList.add("drag-over");
+      button.classList.toggle("drop-after", placeAfter);
+    });
+
+    button.addEventListener("drop", (event) => {
+      event.preventDefault();
+      if (!draggedTaskId || draggedTaskId === button.dataset.id) return;
+      const placeAfter = event.clientY > button.getBoundingClientRect().top + button.offsetHeight / 2;
+      reorderTask(draggedTaskId, button.dataset.id, placeAfter);
+    });
+
+    button.addEventListener("dragend", clearTaskDragState);
+
+    button.addEventListener("keydown", (event) => {
+      if (!event.altKey || !["ArrowUp", "ArrowDown"].includes(event.key)) return;
+      event.preventDefault();
+      moveTask(button.dataset.id, event.key === "ArrowUp" ? -1 : 1);
+    });
+  });
+}
+
+function reorderTask(taskId, targetId, placeAfter) {
+  const sourceIndex = tasks.findIndex((task) => task.id === taskId);
+  if (sourceIndex < 0) return;
+
+  const [movedTask] = tasks.splice(sourceIndex, 1);
+  const targetIndex = tasks.findIndex((task) => task.id === targetId);
+  tasks.splice(targetIndex + (placeAfter ? 1 : 0), 0, movedTask);
+  saveTasks();
+  clearTaskDragState();
+  renderTaskList();
+}
+
+function moveTask(taskId, direction) {
+  const currentIndex = tasks.findIndex((task) => task.id === taskId);
+  const nextIndex = currentIndex + direction;
+  if (currentIndex < 0 || nextIndex < 0 || nextIndex >= tasks.length) return;
+
+  [tasks[currentIndex], tasks[nextIndex]] = [tasks[nextIndex], tasks[currentIndex]];
+  saveTasks();
+  renderTaskList();
+  document.querySelector(`.task-item[data-id="${taskId}"]`)?.focus();
+}
+
+function clearTaskDragState() {
+  draggedTaskId = null;
+  document.querySelectorAll(".task-item").forEach((item) => {
+    item.classList.remove("dragging", "drag-over", "drop-after");
   });
 }
 function renderCalendar() {
