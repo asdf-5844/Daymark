@@ -164,6 +164,7 @@ function renderTaskList() {
             <span class="task-item-progress" role="progressbar" aria-label="${escapeHtml(task.name)} progress" aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
               <i style="width: ${percentage}%"></i>
             </span>
+            <span class="task-item-mode ${goalMode}">${goalMode}</span>
           </span>
         </button>`;
     })

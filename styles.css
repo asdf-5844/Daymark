@@ -1313,3 +1313,24 @@ body.dark .goals-card { background: #163630 }
 body.dark .task-item.active .task-item-progress {
   background: rgba(255, 255, 255, .18)
 }
+.task-item-mode {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  color: var(--muted);
+  background: rgba(117, 129, 123, .1);
+  font: 700 8px Manrope;
+  letter-spacing: .8px;
+  line-height: 1.4;
+  text-transform: uppercase
+}
+
+.task-item-mode.consecutive {
+  color: var(--green);
+  background: rgba(31, 101, 88, .1)
+}
+
+body.dark .task-item-mode {
+  background: rgba(255, 255, 255, .09)
+}
