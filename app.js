@@ -141,13 +141,32 @@ function showGoals() {
 }
 function renderTaskList() {
   $("#taskList").innerHTML = tasks
-    .map(
-      (task) => `
+    .map((task) => {
+      const totalDays = new Set(task.completions).size;
+      const goalMode = task.goalMode || "cumulative";
+      const progressDays =
+        goalMode === "consecutive"
+          ? calculateStreaks(task).current
+          : totalDays;
+      const percentage = Math.min(
+        100,
+        Math.round((progressDays / task.goal) * 100),
+      );
+
+      return `
         <button class="task-item ${task.id === activeTaskId ? "active" : ""}" data-id="${task.id}">
           <span class="mini-icon">${task.icon}</span>
-          <span>${escapeHtml(task.name)}</span>
-        </button>`,
-    )
+          <span class="task-item-info">
+            <span class="task-item-label">
+              <span class="task-item-name">${escapeHtml(task.name)}</span>
+              <span class="task-item-percent">${percentage}%</span>
+            </span>
+            <span class="task-item-progress" role="progressbar" aria-label="${escapeHtml(task.name)} progress" aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
+              <i style="width: ${percentage}%"></i>
+            </span>
+          </span>
+        </button>`;
+    })
     .join("");
 
   document.querySelectorAll(".task-item").forEach((button) => {
@@ -159,7 +178,6 @@ function renderTaskList() {
     });
   });
 }
-
 function renderCalendar() {
   const year = displayedMonth.getFullYear();
   const month = displayedMonth.getMonth();

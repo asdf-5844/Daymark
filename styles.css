@@ -1256,3 +1256,60 @@ body.dark .goals-card { background: #163630 }
   font-weight: 500;
   line-height: 1.45
 }
+/* Sidebar task progress */
+.task-item-info {
+  display: block;
+  flex: 1;
+  min-width: 0
+}
+
+.task-item-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0
+}
+
+.task-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap
+}
+
+.task-item-percent {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700
+}
+
+.task-item-progress {
+  display: block;
+  width: 100%;
+  height: 4px;
+  margin-top: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line)
+}
+
+.task-item-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--green);
+  transition: width .35s ease
+}
+
+.task-item.active .task-item-progress {
+  background: rgba(23, 63, 57, .14)
+}
+
+.task-item.active .task-item-progress i {
+  background: var(--green)
+}
+
+body.dark .task-item.active .task-item-progress {
+  background: rgba(255, 255, 255, .18)
+}
