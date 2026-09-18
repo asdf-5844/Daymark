@@ -32,7 +32,15 @@
         <span>Drag to reorder</span>
       </div>
       <nav id="taskList" class="task-list" aria-label="Your tasks"></nav>
+      <p class="empty-tasks" id="emptyTasks" hidden>No active tasks. Start a new goal below.</p>
       <button class="add-task-link" id="addTaskLink">＋&nbsp;&nbsp;Add a task</button>
+      <section class="completed-tasks-section" id="completedTasksSection" hidden>
+        <div class="sidebar-heading">
+          <div class="eyebrow">COMPLETED TASKS</div>
+          <span id="completedTasksCount"></span>
+        </div>
+        <nav id="completedTaskList" class="task-list" aria-label="Completed tasks"></nav>
+      </section>
       <button class="notes-nav-button" id="notesNavButton"><span>✎</span><span>Notes & reminders</span></button>
       <button class="notes-nav-button" id="goalsNavButton"><span>◎</span><span>Goals</span></button>
       <div class="sidebar-quote">

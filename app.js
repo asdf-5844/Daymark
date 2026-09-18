@@ -110,6 +110,23 @@ function calculateStreaks(task) {
   return { current: currentStreak, best: bestStreak };
 }
 
+function getTaskProgress(task) {
+  const totalDays = new Set(task.completions).size;
+  const streaks = calculateStreaks(task);
+  const goalMode = task.goalMode || "cumulative";
+  const progressDays = goalMode === "consecutive" ? streaks.current : totalDays;
+
+  // Once the required streak has been achieved, a later missed day does not
+  // undo the goal. Removing check-ins or raising the target can reopen it.
+  const achievedDays = goalMode === "consecutive" ? streaks.best : totalDays;
+  const isCompleted = achievedDays >= task.goal;
+  const percentage = isCompleted
+    ? 100
+    : Math.min(99, Math.round((progressDays / task.goal) * 100));
+
+  return { totalDays, streaks, goalMode, percentage, isCompleted };
+}
+
 // Rendering
 
 function setActivePage(page) {
@@ -141,21 +158,12 @@ function showGoals() {
   renderGoals();
 }
 function renderTaskList() {
-  $("#taskList").innerHTML = tasks
-    .map((task) => {
-      const totalDays = new Set(task.completions).size;
-      const goalMode = task.goalMode || "cumulative";
-      const progressDays =
-        goalMode === "consecutive"
-          ? calculateStreaks(task).current
-          : totalDays;
-      const percentage = Math.min(
-        100,
-        Math.round((progressDays / task.goal) * 100),
-      );
+  const taskEntries = tasks.map((task) => ({ task, ...getTaskProgress(task) }));
+  const activeEntries = taskEntries.filter((entry) => !entry.isCompleted);
+  const completedEntries = taskEntries.filter((entry) => entry.isCompleted);
 
-      return `
-        <button class="task-item ${task.id === activeTaskId ? "active" : ""}" data-id="${task.id}" draggable="true" title="Drag to reorder; Alt + Up/Down also works">
+  const createTaskMarkup = ({ task, goalMode, percentage, isCompleted }) => `
+        <button class="task-item ${task.id === activeTaskId ? "active" : ""} ${isCompleted ? "completed-task" : ""}" data-id="${task.id}" draggable="true" title="Drag to reorder within this section; Alt + Up/Down also works">
           <span class="mini-icon">${task.icon}</span>
           <span class="task-item-info">
             <span class="task-item-label">
@@ -168,8 +176,13 @@ function renderTaskList() {
             <span class="task-item-mode ${goalMode}">${goalMode}</span>
           </span>
         </button>`;
-    })
-    .join("");
+
+  $("#taskList").innerHTML = activeEntries.map(createTaskMarkup).join("");
+  $("#completedTaskList").innerHTML = completedEntries.map(createTaskMarkup).join("");
+  $("#emptyTasks").hidden = activeEntries.length > 0;
+  $("#completedTasksSection").hidden = completedEntries.length === 0;
+  $("#completedTasksCount").textContent =
+    `${completedEntries.length} task${completedEntries.length === 1 ? "" : "s"}`;
 
   document.querySelectorAll(".task-item").forEach((button) => {
     button.addEventListener("click", () => {
@@ -187,7 +200,7 @@ function renderTaskList() {
     });
 
     button.addEventListener("dragover", (event) => {
-      if (!draggedTaskId || draggedTaskId === button.dataset.id) return;
+      if (!canReorderTasks(draggedTaskId, button.dataset.id)) return;
       event.preventDefault();
       document.querySelectorAll(".task-item.drag-over").forEach((item) => {
         item.classList.remove("drag-over", "drop-after");
@@ -214,7 +227,17 @@ function renderTaskList() {
   });
 }
 
+function canReorderTasks(taskId, targetId) {
+  const task = tasks.find((item) => item.id === taskId);
+  const target = tasks.find((item) => item.id === targetId);
+  if (!task || !target || taskId === targetId) return false;
+
+  // Moving a task cannot change whether its goal has been achieved.
+  return getTaskProgress(task).isCompleted === getTaskProgress(target).isCompleted;
+}
+
 function reorderTask(taskId, targetId, placeAfter) {
+  if (!canReorderTasks(taskId, targetId)) return;
   const sourceIndex = tasks.findIndex((task) => task.id === taskId);
   if (sourceIndex < 0) return;
 
@@ -227,9 +250,19 @@ function reorderTask(taskId, targetId, placeAfter) {
 }
 
 function moveTask(taskId, direction) {
+  const task = tasks.find((item) => item.id === taskId);
+  if (!task) return;
+
+  const isCompleted = getTaskProgress(task).isCompleted;
+  const sectionTasks = tasks.filter(
+    (item) => getTaskProgress(item).isCompleted === isCompleted,
+  );
+  const sectionIndex = sectionTasks.findIndex((item) => item.id === taskId);
+  const nextTask = sectionTasks[sectionIndex + direction];
+  if (!nextTask) return;
+
   const currentIndex = tasks.findIndex((task) => task.id === taskId);
-  const nextIndex = currentIndex + direction;
-  if (currentIndex < 0 || nextIndex < 0 || nextIndex >= tasks.length) return;
+  const nextIndex = tasks.findIndex((item) => item.id === nextTask.id);
 
   [tasks[currentIndex], tasks[nextIndex]] = [tasks[nextIndex], tasks[currentIndex]];
   saveTasks();
@@ -512,11 +545,7 @@ function renderApp() {
   }
 
   const task = getActiveTask();
-  const totalDays = new Set(task.completions).size;
-  const streaks = calculateStreaks(task);
-  const goalMode = task.goalMode || "cumulative";
-  const progressDays = goalMode === "consecutive" ? streaks.current : totalDays;
-  const percentage = Math.min(100, Math.round((progressDays / task.goal) * 100));
+  const { totalDays, streaks, goalMode, percentage, isCompleted } = getTaskProgress(task);
 
   $("#taskNoteInput").value = task.note || "";
   $("#taskNoteStatus").textContent = "Saved";
@@ -534,7 +563,7 @@ function renderApp() {
     ? `${streaks.current} day${streaks.current === 1 ? "" : "s"} strong. Keep the rhythm.`
     : "Your journey starts today.";
 
-  $("#encouragementText").textContent = progressDays >= task.goal
+  $("#encouragementText").textContent = isCompleted
     ? "You reached your goal. That is something to celebrate."
     : "Show up for yourself—one day at a time.";
 
