@@ -39,6 +39,7 @@ let editingNoteId = null;
 let goals = JSON.parse(localStorage.getItem("daymark-goals") || "null") || [];
 let editingGoalId = null;
 let draggedTaskId = null;
+let activePage = "tracker";
 
 // Storage and date helpers
 
@@ -130,6 +131,7 @@ function getTaskProgress(task) {
 // Rendering
 
 function setActivePage(page) {
+  activePage = page;
   $("#mainContent").hidden = page !== "tracker";
   $("#notesPage").hidden = page !== "notes";
   $("#goalsPage").hidden = page !== "goals";
@@ -144,17 +146,42 @@ function setActivePage(page) {
   });
 }
 
+function openDaymark(page = activePage) {
+  $("#homePage").hidden = true;
+  $("#appShell").hidden = false;
+  $("#newTaskButton").hidden = false;
+  $("#privacyShortcut").hidden = false;
+  document.body.classList.remove("home-view");
+  setActivePage(page);
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function showHome() {
+  closeTaskModal();
+  closePastDayModal();
+  $("#taskMenu").classList.remove("open");
+  $("#toast").classList.remove("show");
+  clearTimeout(window.toastTimer);
+  $("#homePage").hidden = false;
+  $("#appShell").hidden = true;
+  $("#newTaskButton").hidden = true;
+  $("#privacyShortcut").hidden = true;
+  document.body.classList.add("home-view");
+  window.scrollTo({ top: 0, behavior: "instant" });
+  $("#openAppButton").focus();
+}
+
 function showTracker() {
-  setActivePage("tracker");
+  openDaymark("tracker");
 }
 
 function showNotes() {
-  setActivePage("notes");
+  openDaymark("notes");
   renderNotes();
 }
 
 function showGoals() {
-  setActivePage("goals");
+  openDaymark("goals");
   renderGoals();
 }
 function renderTaskList() {
@@ -800,6 +827,11 @@ $("#newTaskButton").addEventListener("click", () => {
   showTracker();
   openTaskModal();
 });
+$("#openAppButton").addEventListener("click", () => openDaymark());
+$("#homeLink").addEventListener("click", (event) => {
+  event.preventDefault();
+  showHome();
+});
 $("#addTaskLink").addEventListener("click", () => {
   showTracker();
   openTaskModal();
@@ -917,9 +949,18 @@ $("#themeButton").addEventListener("click", () => {
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    const hadOpenOverlay =
+      $("#taskModal").classList.contains("open") ||
+      $("#pastDayModal").classList.contains("open") ||
+      $("#taskMenu").classList.contains("open");
+
     closeTaskModal();
     closePastDayModal();
     $("#taskMenu").classList.remove("open");
+
+    if (!hadOpenOverlay && !$("#appShell").hidden) {
+      showHome();
+    }
   }
 });
 
@@ -932,3 +973,4 @@ if (localStorage.getItem("daymark-theme") === "dark") {
 renderApp();
 renderNotes();
 renderGoals();
+showHome();

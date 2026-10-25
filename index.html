@@ -13,11 +13,14 @@
 <body>
   <div class="grain"></div>
   <header class="topbar">
-    <a href="#" class="brand" aria-label="Daymark home">
+    <a href="#home" class="brand" id="homeLink" aria-label="Daymark home">
       <span class="brand-mark"><i></i><i></i><i></i></span>
       <span>daymark</span>
     </a>
     <div class="header-actions">
+      <span class="privacy-shortcut" id="privacyShortcut" aria-label="Press Escape to hide tasks" hidden>
+        <span>Press</span> <kbd>Esc</kbd> <span>to hide tasks</span>
+      </span>
       <button class="icon-button" id="themeButton" aria-label="Toggle theme">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42"/><circle cx="12" cy="12" r="4"/></svg>
       </button>
@@ -25,7 +28,23 @@
     </div>
   </header>
 
-  <main class="app-shell">
+  <main class="home-page" id="homePage">
+    <section class="home-hero" aria-labelledby="homeTitle">
+      <div class="home-symbol" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="eyebrow">WELCOME TO DAYMARK</div>
+      <h1 id="homeTitle">Make today count.</h1>
+      <p>A quiet space for building momentum, one day at a time.</p>
+      <button class="primary-button home-open-button" id="openAppButton">
+        Open Daymark <span aria-hidden="true">→</span>
+      </button>
+    </section>
+  </main>
+
+  <main class="app-shell" id="appShell" hidden>
     <aside class="sidebar">
       <div class="sidebar-heading">
         <div class="eyebrow">YOUR JOURNEY</div>
